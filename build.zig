@@ -10,7 +10,7 @@ pub fn build(b: *std.Build) !void {
     const docking = b.option(bool, "docking", "") orelse false;
     const imconfig = blk: {
         var imconfig_include_dir = b.addWriteFiles();
-        if (b.option(std.Build.LazyPath, "imconfig", "configuration file for imgui. see imconfig.h in root of imgui repo for details. /!\\ not every configs in imconfig.h are supported as some change the bindings generation and the bindings are pre-generated.")) |imconfig| {
+        if (b.option(std.Build.LazyPath, "imconfig", "configuration file for imgui. see imconfig.h in root of imgui repo for details. /!\\ not every configs in imconfig.h are supported as some change the binding generation and the bindings are pre-generated.")) |imconfig| {
             _ = imconfig_include_dir.addCopyFile(imconfig, "imconfig.h");
         } else {
             _ = imconfig_include_dir.add("imconfig.h", "");
@@ -74,7 +74,7 @@ pub fn build(b: *std.Build) !void {
 
     {
         const lib_dcimgui = b.addLibrary(.{
-            .linkage = b.option(std.builtin.LinkMode, "linkage", "default to static") orelse .static,
+            .linkage = b.option(std.builtin.LinkMode, "linkage", "defaults to static") orelse .static,
             .name = "dcimgui",
             .root_module = lib_dcimgui_mod,
         });
@@ -92,7 +92,7 @@ pub fn build(b: *std.Build) !void {
     {
         const generator = b.addWriteFiles();
         _ = generator.addCopyDirectory(b.dependency("dear_bindings", .{}).path(""), "", .{});
-        _ = generator.addCopyDirectory(b.dependency("ply", .{}).path("src"), "", .{});
+        _ = generator.addCopyDirectory(b.dependency("ply", .{}).path(""), "", .{});
         const generator_path = generator.getDirectory().path(b, "dear_bindings.py");
 
         const gen_script = b.addExecutable(.{
@@ -103,21 +103,19 @@ pub fn build(b: *std.Build) !void {
             }),
         });
 
-        const run_gen = b.addRunArtifact(gen_script);
+        const run_gen_imgui = b.addRunArtifact(gen_script);
+        run_gen_imgui.addFileArg(generator_path);
+        run_gen_imgui.addFileArg(b.path("gen/imgui"));
+        run_gen_imgui.addFileArg(b.dependency("imgui", .{}).path(""));
 
-        run_gen.addFileArg(generator_path);
-        run_gen.addFileArg(b.path("gen"));
-
-        run_gen.addArg("--imgui");
-        run_gen.addArg("imgui");
-        run_gen.addFileArg(b.dependency("imgui", .{}).path(""));
-
-        run_gen.addArg("--imgui");
-        run_gen.addArg("imgui_docking");
-        run_gen.addFileArg(b.dependency("imgui_docking", .{}).path(""));
+        const run_gen_imgui_docking = b.addRunArtifact(gen_script);
+        run_gen_imgui_docking.addFileArg(generator_path);
+        run_gen_imgui_docking.addFileArg(b.path("gen/imgui_docking"));
+        run_gen_imgui_docking.addFileArg(b.dependency("imgui_docking", .{}).path(""));
 
         const gen_step = b.step("gen", "");
-        gen_step.dependOn(&run_gen.step);
+        gen_step.dependOn(&run_gen_imgui.step);
+        gen_step.dependOn(&run_gen_imgui_docking.step);
     }
 }
 

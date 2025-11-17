@@ -1,23 +1,23 @@
 .{
     .name = .dcimgui,
-    .version = "0.0.0",
+    .version = "0.1.0+1.92.4",
     .fingerprint = 0x1a257974cc65f338,
     .dependencies = .{
         .dear_bindings = .{
-            .url = "git+https://github.com/dearimgui/dear_bindings#d27d0824350dcaa08c09b1e882ea1ce13f2eb90d",
+            .url = "git+https://github.com/dearimgui/dear_bindings?ref=v0.17#d27d0824350dcaa08c09b1e882ea1ce13f2eb90d",
             .hash = "N-V-__8AAMhuCACb7QDIj4wjliIff7zos7Lf2KEZRjdTO06R",
         },
         .ply = .{
-            .url = "git+https://github.com/dabeaz/ply#5c4dc94d4c6d059ec127ee1493c735963a5d2645",
-            .hash = "N-V-__8AAPmiCABE_SI4E3AW1QQMpvhKAhO6NSDvikun55RB",
+            .url = "git+https://github.com/dabeaz/ply?ref=3.11#0f398b72618c1564d71f7dc0558e6722b241875a",
+            .hash = "N-V-__8AANOXCgAVFWJAvR-bqCDO-mLL_H1eMFe5DSdhA1gQ",
         },
         .imgui = .{
-            .url = "git+https://github.com/ocornut/imgui?ref=v1.92.3#bf75bfec48fc00f532af8926130b70c0e26eb099",
-            .hash = "N-V-__8AAEHhbwAGe10fih4RPMsSgezO3Y0wl3MiwolFfu_y",
+            .url = "git+https://github.com/ocornut/imgui?ref=v1.92.4#9a5d5c45f54b1301ea471622eddede70384243af",
+            .hash = "N-V-__8AAIPPcAA2STOPiQFV-Ei33DCWcQB9y9X3UfjeBwf-",
         },
         .imgui_docking = .{
-            .url = "git+https://github.com/ocornut/imgui?ref=docking#8f3f4282288b17aee798b6fade6787a8a17843ca",
-            .hash = "N-V-__8AAJ73egAT6whJKw9llyGPmB9wEOwpfhosJQtlj4Z1",
+            .url = "git+https://github.com/ocornut/imgui?ref=v1.92.4-docking#e7d2d636affeeac1fc7175fb13472ca02d1bc0d1",
+            .hash = "N-V-__8AAHwPewClW2y9BBZutBm10jhvp8AHcvJZJrfceCM4",
         },
     },
     .paths = .{
