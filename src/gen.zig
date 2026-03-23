@@ -7,15 +7,19 @@ pub const Backend = enum {
     imgui_impl_dx9,
     imgui_impl_glfw,
     imgui_impl_glut,
+    imgui_impl_null,
     imgui_impl_opengl2,
     imgui_impl_opengl3,
+    imgui_impl_opengl3_loader,
     imgui_impl_sdl2,
     imgui_impl_sdl3,
+    imgui_impl_sdlgpu3,
+    imgui_impl_sdlgpu3_shaders,
     imgui_impl_sdlrenderer2,
     imgui_impl_sdlrenderer3,
-    imgui_impl_win32,
     imgui_impl_vulkan,
-    imgui_impl_sdlgpu3,
+    imgui_impl_wgpu,
+    imgui_impl_win32,
     // imgui_impl_metal, // unsupported
     // imgui_impl_osx, // unsupported
 };
@@ -66,14 +70,15 @@ pub fn main() !void {
 
     {
         try std.fs.makeDirAbsolute(args.out_path);
-        const proc: std.process.Child = .init(&.{
+        const argv = try gpa.dupe([]const u8, &.{
             python_path,
             args.generator_path,
             try std.fs.path.join(gpa, &.{ args.imgui_path, "imgui.h" }),
 
             "-o",
             try std.fs.path.join(gpa, &.{ args.out_path, "dcimgui" }),
-        }, gpa);
+        });
+        const proc: std.process.Child = .init(argv, gpa);
 
         const thread = try std.Thread.spawn(.{}, run, .{ proc, progress.start("dcimgui", 0) });
         try procs.append(gpa, thread);
@@ -82,7 +87,7 @@ pub fn main() !void {
     const backends_out_path = try std.fs.path.join(gpa, &.{ args.out_path, "backends" });
     try std.fs.makeDirAbsolute(backends_out_path);
     for (std.enums.values(Backend)) |field| {
-        const proc: std.process.Child = .init(&.{
+        const argv = try gpa.dupe([]const u8, &.{
             python_path,
             args.generator_path,
             "--backend",
@@ -94,7 +99,8 @@ pub fn main() !void {
 
             "-o",
             try std.fmt.allocPrint(gpa, "{s}/dc{s}", .{ backends_out_path, @tagName(field) }),
-        }, gpa);
+        });
+        const proc: std.process.Child = .init(argv, gpa);
 
         const node_name = try std.fmt.allocPrint(gpa, "backend {t}", .{field});
         const thread = try std.Thread.spawn(.{}, run, .{ proc, progress.start(node_name, 0) });

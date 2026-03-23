@@ -10,7 +10,11 @@ pub fn build(b: *std.Build) !void {
     const docking = b.option(bool, "docking", "") orelse false;
     const imconfig = blk: {
         var imconfig_include_dir = b.addWriteFiles();
-        if (b.option(std.Build.LazyPath, "imconfig", "configuration file for imgui. see imconfig.h in root of imgui repo for details. /!\\ not every configs in imconfig.h are supported as some change the binding generation and the bindings are pre-generated.")) |imconfig| {
+        if (b.option(
+            std.Build.LazyPath,
+            "imconfig",
+            "configuration file for imgui. see imconfig.h in root of imgui repo for details. /!\\ not every configs in imconfig.h are supported as some change the binding generation and the bindings are pre-generated.",
+        )) |imconfig| {
             _ = imconfig_include_dir.addCopyFile(imconfig, "imconfig.h");
         } else {
             _ = imconfig_include_dir.add("imconfig.h", "");
@@ -95,6 +99,11 @@ pub fn build(b: *std.Build) !void {
         _ = generator.addCopyDirectory(b.dependency("ply", .{}).path(""), "", .{});
         const generator_path = generator.getDirectory().path(b, "dear_bindings.py");
 
+        const generator_docking = b.addWriteFiles();
+        _ = generator_docking.addCopyDirectory(b.dependency("dear_bindings_docking", .{}).path(""), "", .{});
+        _ = generator_docking.addCopyDirectory(b.dependency("ply", .{}).path(""), "", .{});
+        const generator_docking_path = generator_docking.getDirectory().path(b, "dear_bindings.py");
+
         const gen_script = b.addExecutable(.{
             .name = "gen",
             .root_module = b.createModule(.{
@@ -109,7 +118,7 @@ pub fn build(b: *std.Build) !void {
         run_gen_imgui.addFileArg(b.dependency("imgui", .{}).path(""));
 
         const run_gen_imgui_docking = b.addRunArtifact(gen_script);
-        run_gen_imgui_docking.addFileArg(generator_path);
+        run_gen_imgui_docking.addFileArg(generator_docking_path);
         run_gen_imgui_docking.addFileArg(b.path("gen/imgui_docking"));
         run_gen_imgui_docking.addFileArg(b.dependency("imgui_docking", .{}).path(""));
 
