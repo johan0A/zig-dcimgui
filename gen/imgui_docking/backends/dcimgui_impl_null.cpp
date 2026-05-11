@@ -3,7 +3,7 @@
 // https://github.com/dearimgui/dear_bindings
 
 #include "imgui.h"
-#include "imgui_impl_allegro5.h"
+#include "imgui_impl_null.h"
 
 #include <stdio.h>
 
@@ -13,9 +13,10 @@
 #define DEAR_BINDINGS_INTERNAL_GLUE_CODE
 namespace cimgui
 {
-#include "dcimgui_impl_allegro5.h"
+#include "dcimgui_impl_null.h"
 }
 #undef DEAR_BINDINGS_INTERNAL_GLUE_CODE
+
 // By-value struct conversions
 
 static inline cimgui::ImVec2 ConvertFromCPP_ImVec2(const ::ImVec2& src)
@@ -94,49 +95,54 @@ static inline ::ImColor ConvertToCPP_ImColor(const cimgui::ImColor& src)
 
 #ifndef IMGUI_DISABLE
 
-CIMGUI_IMPL_API bool cimgui::cImGui_ImplAllegro5_Init(cimgui::ALLEGRO_DISPLAY* display)
+CIMGUI_IMPL_API bool cimgui::cImGui_ImplNull_Init(void)
 {
-    return ::ImGui_ImplAllegro5_Init(reinterpret_cast<::ALLEGRO_DISPLAY*>(display));
+    return ::ImGui_ImplNull_Init();
 }
 
-CIMGUI_IMPL_API void cimgui::cImGui_ImplAllegro5_Shutdown(void)
+CIMGUI_IMPL_API void cimgui::cImGui_ImplNull_Shutdown(void)
 {
-    ::ImGui_ImplAllegro5_Shutdown();
+    ::ImGui_ImplNull_Shutdown();
 }
 
-CIMGUI_IMPL_API void cimgui::cImGui_ImplAllegro5_NewFrame(void)
+CIMGUI_IMPL_API void cimgui::cImGui_ImplNull_NewFrame(void)
 {
-    ::ImGui_ImplAllegro5_NewFrame();
+    ::ImGui_ImplNull_NewFrame();
 }
 
-CIMGUI_IMPL_API void cimgui::cImGui_ImplAllegro5_RenderDrawData(cimgui::ImDrawData* draw_data)
+CIMGUI_IMPL_API bool cimgui::cImGui_ImplNullPlatform_Init(void)
 {
-    ::ImGui_ImplAllegro5_RenderDrawData(reinterpret_cast<::ImDrawData*>(draw_data));
+    return ::ImGui_ImplNullPlatform_Init();
 }
 
-CIMGUI_IMPL_API bool cimgui::cImGui_ImplAllegro5_ProcessEvent(cimgui::ALLEGRO_EVENT* event)
+CIMGUI_IMPL_API void cimgui::cImGui_ImplNullPlatform_Shutdown(void)
 {
-    return ::ImGui_ImplAllegro5_ProcessEvent(reinterpret_cast<::ALLEGRO_EVENT*>(event));
+    ::ImGui_ImplNullPlatform_Shutdown();
 }
 
-CIMGUI_IMPL_API void cimgui::cImGui_ImplAllegro5_SetDisplay(cimgui::ALLEGRO_DISPLAY* display)
+CIMGUI_IMPL_API void cimgui::cImGui_ImplNullPlatform_NewFrame(void)
 {
-    ::ImGui_ImplAllegro5_SetDisplay(reinterpret_cast<::ALLEGRO_DISPLAY*>(display));
+    ::ImGui_ImplNullPlatform_NewFrame();
 }
 
-CIMGUI_IMPL_API bool cimgui::cImGui_ImplAllegro5_CreateDeviceObjects(void)
+CIMGUI_IMPL_API bool cimgui::cImGui_ImplNullRender_Init(void)
 {
-    return ::ImGui_ImplAllegro5_CreateDeviceObjects();
+    return ::ImGui_ImplNullRender_Init();
 }
 
-CIMGUI_IMPL_API void cimgui::cImGui_ImplAllegro5_InvalidateDeviceObjects(void)
+CIMGUI_IMPL_API void cimgui::cImGui_ImplNullRender_Shutdown(void)
 {
-    ::ImGui_ImplAllegro5_InvalidateDeviceObjects();
+    ::ImGui_ImplNullRender_Shutdown();
 }
 
-CIMGUI_IMPL_API void cimgui::cImGui_ImplAllegro5_UpdateTexture(cimgui::ImTextureData* tex)
+CIMGUI_IMPL_API void cimgui::cImGui_ImplNullRender_NewFrame(void)
 {
-    ::ImGui_ImplAllegro5_UpdateTexture(reinterpret_cast<::ImTextureData*>(tex));
+    ::ImGui_ImplNullRender_NewFrame();
+}
+
+CIMGUI_IMPL_API void cimgui::cImGui_ImplNullRender_RenderDrawData(cimgui::ImDrawData* draw_data)
+{
+    ::ImGui_ImplNullRender_RenderDrawData(reinterpret_cast<::ImDrawData*>(draw_data));
 }
 
 #endif // #ifndef IMGUI_DISABLE

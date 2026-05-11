@@ -8,20 +8,20 @@
             .hash = "N-V-__8AANOXCgAVFWJAvR-bqCDO-mLL_H1eMFe5DSdhA1gQ",
         },
         .dear_bindings = .{
-            .url = "git+https://github.com/dearimgui/dear_bindings?ref=DearBindings_v0.17_ImGui_v1.92.6#c8049278a3dcda45dea93555534c8cab250d566b",
-            .hash = "N-V-__8AADrXCAA2dA61i058pjoYHMhUPzM35yUsvZwYQ-nv",
+            .url = "git+https://github.com/dearimgui/dear_bindings?ref=DearBindings_v0.21_ImGui_v1.92.7#c9ff64913915df41c0f4beef485b98a1c685eda5",
+            .hash = "N-V-__8AAPErCQARgFL-uXKTjXbwnJv4IPOIC8kr-yJrFXEr",
         },
         .dear_bindings_docking = .{
-            .url = "git+https://github.com/dearimgui/dear_bindings?ref=DearBindings_v0.17_ImGui_v1.92.6-docking#c8049278a3dcda45dea93555534c8cab250d566b",
-            .hash = "N-V-__8AADrXCAA2dA61i058pjoYHMhUPzM35yUsvZwYQ-nv",
+            .url = "git+https://github.com/dearimgui/dear_bindings?ref=DearBindings_v0.21_ImGui_v1.92.7-docking#c9ff64913915df41c0f4beef485b98a1c685eda5",
+            .hash = "N-V-__8AAPErCQARgFL-uXKTjXbwnJv4IPOIC8kr-yJrFXEr",
         },
         .imgui = .{
-            .url = "git+https://github.com/ocornut/imgui?ref=v1.92.6#6ded5230d043aa32c755e65c910c2af5002fb9f9",
-            .hash = "N-V-__8AAKo9dQCnHCbDc8SV78HlckAXKEwfcXl-Beusyi3T",
+            .url = "git+https://github.com/ocornut/imgui?ref=v1.92.7#dac07199cfd761113d966eb8ad739254e10df2fe",
+            .hash = "N-V-__8AAJYGdgBRpnbvCM6TYAXaF3SAnIHIShxHtrL4uhCU",
         },
         .imgui_docking = .{
-            .url = "git+https://github.com/ocornut/imgui?ref=v1.92.6-docking#2a1b69f05748ad909f03acf4533447cac1331611",
-            .hash = "N-V-__8AAOSlfwD9SQYt6XBCvJduJQ2mvyloFlCNv_vzIlm4",
+            .url = "git+https://github.com/ocornut/imgui?ref=v1.92.7-docking#b1bcb12a624af7509894c8e77dd47416997777fa",
+            .hash = "N-V-__8AAPaAgABZhe_qrsumV412WbnTGsh4IKVTRYSF_jCc",
         },
     },
     .paths = .{

@@ -8,10 +8,14 @@
 #include <stdio.h>
 
 // Wrap this in a namespace to keep it separate from the C++ API
+// This define prevents #defines in the header getting defined again (as they are already in the normal header above),
+// and thus generating redefinition warnings
+#define DEAR_BINDINGS_INTERNAL_GLUE_CODE
 namespace cimgui
 {
 #include "dcimgui_impl_wgpu.h"
 }
+#undef DEAR_BINDINGS_INTERNAL_GLUE_CODE
 
 // By-value struct conversions
 
@@ -166,14 +170,14 @@ CIMGUI_IMPL_API const char* cimgui::cImGui_ImplWGPU_GetErrorTypeName(WGPUErrorTy
 #endif // #if defined(IMGUI_IMPL_WEBGPU_BACKEND_DAWN)
 
 #if !(defined(IMGUI_IMPL_WEBGPU_BACKEND_DAWN))
-#if defined(IMGUI_IMPL_WEBGPU_BACKEND_WGPU)&&!defined(__EMSCRIPTEN__)
+#if defined(IMGUI_IMPL_WEBGPU_BACKEND_WGPU)
 
 CIMGUI_IMPL_API const char* cimgui::cImGui_ImplWGPU_GetLogLevelName(WGPULogLevel level)
 {
     return ::ImGui_ImplWGPU_GetLogLevelName(level);
 }
 
-#endif // #if defined(IMGUI_IMPL_WEBGPU_BACKEND_WGPU)&&!defined(__EMSCRIPTEN__)
+#endif // #if defined(IMGUI_IMPL_WEBGPU_BACKEND_WGPU)
 #endif // #if !(defined(IMGUI_IMPL_WEBGPU_BACKEND_DAWN))
 
 #ifndef __EMSCRIPTEN__

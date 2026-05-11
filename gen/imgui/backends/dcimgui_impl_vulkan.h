@@ -4,6 +4,7 @@
 
 // dear imgui: Renderer Backend for Vulkan
 // Auto-generated forward declarations for C header
+typedef struct ImVector_VkDynamicState_t ImVector_VkDynamicState;
 typedef struct ImGui_ImplVulkan_PipelineInfo_t ImGui_ImplVulkan_PipelineInfo;
 typedef struct ImGui_ImplVulkan_InitInfo_t ImGui_ImplVulkan_InitInfo;
 typedef struct ImGui_ImplVulkan_RenderState_t ImGui_ImplVulkan_RenderState;
@@ -92,6 +93,7 @@ extern "C"
 #else
 #include <vulkan/vulkan.h>
 #endif // #ifdef IMGUI_IMPL_VULKAN_USE_VOLK
+struct ImVector_VkDynamicState_t { int Size; int Capacity; VkDynamicState* Data; };  // Instantiation of ImVector<VkDynamicState>
 #if defined(VK_VERSION_1_3)|| defined(VK_KHR_dynamic_rendering)
 #define IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
 #endif // #if defined(VK_VERSION_1_3)|| defined(VK_KHR_dynamic_rendering)
@@ -104,6 +106,7 @@ struct ImGui_ImplVulkan_PipelineInfo_t
     VkRenderPass                     RenderPass;                   // Ignored if using dynamic rendering
     uint32_t                         Subpass;                      //
     VkSampleCountFlagBits            MSAASamples /* = {} */;       // 0 defaults to VK_SAMPLE_COUNT_1_BIT
+    ImVector_VkDynamicState          ExtraDynamicStates;           // Optional, allows to insert more dynamic states into our VkPipeline
 #ifdef IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
     VkPipelineRenderingCreateInfoKHR PipelineRenderingCreateInfo;  // Optional, valid if .sType == VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR
 #endif // #ifdef IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
