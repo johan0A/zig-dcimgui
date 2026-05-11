@@ -1,4 +1,5 @@
 const std = @import("std");
+const dcimgui = @import("dcimgui");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -18,12 +19,11 @@ pub fn build(b: *std.Build) void {
         });
         root_module.linkLibrary(sdl_dep.artifact("SDL3"));
 
-        const ImguiBackend = @import("dcimgui").Backend;
         const cimgui_dep = b.dependency("dcimgui", .{
             .target = target,
             .optimize = optimize,
             .docking = true,
-            .backends = &[_]ImguiBackend{ .imgui_impl_sdlrenderer3, .imgui_impl_sdl3 },
+            .backends = &[_]dcimgui.Backend{ .imgui_impl_sdlrenderer3, .imgui_impl_sdl3 },
             .@"include-path-list" = &[_]std.Build.LazyPath{sdl_dep.artifact("SDL3").getEmittedIncludeTree()},
             .imconfig = b.addWriteFiles().add("imconfig.h",
                 \\ #pragma once

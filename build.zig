@@ -94,6 +94,8 @@ pub fn build(b: *std.Build) !void {
     }
 
     {
+        const python_path = b.option([]const u8, "python-path", "python path used for the gen step") orelse "python";
+
         const generator = b.addWriteFiles();
         _ = generator.addCopyDirectory(b.dependency("dear_bindings", .{}).path(""), "", .{});
         _ = generator.addCopyDirectory(b.dependency("ply", .{}).path(""), "", .{});
@@ -113,11 +115,13 @@ pub fn build(b: *std.Build) !void {
         });
 
         const run_gen_imgui = b.addRunArtifact(gen_script);
+        run_gen_imgui.addArg(python_path);
         run_gen_imgui.addFileArg(generator_path);
         run_gen_imgui.addFileArg(b.path("gen/imgui"));
         run_gen_imgui.addFileArg(b.dependency("imgui", .{}).path(""));
 
         const run_gen_imgui_docking = b.addRunArtifact(gen_script);
+        run_gen_imgui_docking.addArg(python_path);
         run_gen_imgui_docking.addFileArg(generator_docking_path);
         run_gen_imgui_docking.addFileArg(b.path("gen/imgui_docking"));
         run_gen_imgui_docking.addFileArg(b.dependency("imgui_docking", .{}).path(""));

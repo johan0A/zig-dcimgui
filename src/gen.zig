@@ -1,3 +1,5 @@
+const std = @import("std");
+
 pub const Backend = enum {
     imgui_impl_allegro5,
     imgui_impl_android,
@@ -25,99 +27,103 @@ pub const Backend = enum {
 };
 
 const Args = struct {
+    python_path: []const u8,
     generator_path: []const u8,
     out_path: []const u8,
     imgui_path: []const u8,
 };
 
-fn run(proc: std.process.Child, node: std.Progress.Node) !void {
-    var proc_var = proc;
-    proc_var.stderr_behavior = .Ignore;
-    proc_var.stdout_behavior = .Ignore;
-    _ = try proc_var.spawn();
-    try proc_var.waitForSpawn();
-    _ = try proc_var.wait();
-    node.end();
+fn run(io: std.Io, argv: []const []const u8, node: std.Progress.Node) error{Canceled}!void {
+    defer node.end();
+    runInner(io, argv) catch |err| switch (err) {
+        error.Canceled => return error.Canceled,
+        else => {
+            std.log.err("task failed ({s}): {s}", .{ argv[0], @errorName(err) });
+        },
+    };
 }
 
-pub fn main() !void {
-    const gpa = std.heap.page_allocator;
+fn runInner(io: std.Io, argv: []const []const u8) !void {
+    var child = try std.process.spawn(io, .{
+        .argv = argv,
+        .stdout = .ignore,
+        .stderr = .ignore,
+    });
+    _ = try child.wait(io);
+}
 
-    const raw_args = try std.process.argsAlloc(gpa);
+pub fn main(init: std.process.Init) !void {
+    const io = init.io;
+    const arena = init.arena.allocator();
+    const raw_args = try init.minimal.args.toSlice(arena);
 
-    if (raw_args.len < 4) {
-        std.debug.print("Usage: {s} <generator_path> <out_path> <path>\n", .{raw_args[0]});
-        return;
+    if (raw_args.len < 5) {
+        std.debug.print("Usage: {s} <python_path> <generator_path> <out_path> <path>\n", .{raw_args[0]});
+        std.process.exit(1);
     }
 
     const args: Args = .{
-        .generator_path = raw_args[1],
-        .out_path = raw_args[2],
-        .imgui_path = raw_args[3],
+        .python_path = raw_args[1],
+        .generator_path = raw_args[2],
+        .out_path = raw_args[3],
+        .imgui_path = raw_args[4],
     };
 
-    std.fs.deleteTreeAbsolute(args.out_path) catch |err| switch (err) {
-        error.FileNotFound => {},
-        else => |e| return e,
-    };
+    try std.Io.Dir.cwd().deleteTree(io, args.out_path);
 
-    const python_path = "python";
-
-    const progress = std.Progress.start(.{ .root_name = "gen" });
+    const progress = std.Progress.start(io, .{ .root_name = "gen" });
     defer progress.end();
 
-    var procs: std.ArrayList(std.Thread) = .empty;
+    var group: std.Io.Group = .init;
+    defer group.cancel(io);
 
+    try std.Io.Dir.cwd().createDir(io, args.out_path, .default_dir);
     {
-        try std.fs.makeDirAbsolute(args.out_path);
-        const argv = try gpa.dupe([]const u8, &.{
-            python_path,
+        const argv = try arena.dupe([]const u8, &.{
+            args.python_path,
             args.generator_path,
-            try std.fs.path.join(gpa, &.{ args.imgui_path, "imgui.h" }),
+            try std.fs.path.join(arena, &.{ args.imgui_path, "imgui.h" }),
 
             "-o",
-            try std.fs.path.join(gpa, &.{ args.out_path, "dcimgui" }),
+            try std.fs.path.join(arena, &.{ args.out_path, "dcimgui" }),
         });
-        const proc: std.process.Child = .init(argv, gpa);
 
-        const thread = try std.Thread.spawn(.{}, run, .{ proc, progress.start("dcimgui", 0) });
-        try procs.append(gpa, thread);
+        group.async(io, run, .{ io, argv, progress.start("dcimgui", 0) });
     }
 
-    const backends_out_path = try std.fs.path.join(gpa, &.{ args.out_path, "backends" });
-    try std.fs.makeDirAbsolute(backends_out_path);
+    const backends_out_path = try std.fs.path.join(arena, &.{ args.out_path, "backends" });
+    try std.Io.Dir.createDirAbsolute(io, backends_out_path, .default_dir);
+
     for (std.enums.values(Backend)) |field| {
-        const argv = try gpa.dupe([]const u8, &.{
-            python_path,
+        const argv = try arena.dupe([]const u8, &.{
+            args.python_path,
             args.generator_path,
             "--backend",
 
             "--include",
-            try std.fs.path.join(gpa, &.{ args.imgui_path, "imgui.h" }),
+            try std.fs.path.join(arena, &.{ args.imgui_path, "imgui.h" }),
 
-            try std.fmt.allocPrint(gpa, "{s}/{s}/{s}.h", .{ args.imgui_path, "backends", @tagName(field) }),
+            try std.fmt.allocPrint(arena, "{s}/{s}/{s}.h", .{ args.imgui_path, "backends", @tagName(field) }),
 
             "-o",
-            try std.fmt.allocPrint(gpa, "{s}/dc{s}", .{ backends_out_path, @tagName(field) }),
+            try std.fmt.allocPrint(arena, "{s}/dc{s}", .{ backends_out_path, @tagName(field) }),
         });
-        const proc: std.process.Child = .init(argv, gpa);
 
-        const node_name = try std.fmt.allocPrint(gpa, "backend {t}", .{field});
-        const thread = try std.Thread.spawn(.{}, run, .{ proc, progress.start(node_name, 0) });
-        try procs.append(gpa, thread);
+        const node_name = try std.fmt.allocPrint(arena, "backend {t}", .{field});
+        group.async(io, run, .{ io, argv, progress.start(node_name, 0) });
     }
 
-    for (procs.items) |*proc| {
-        proc.join();
-    }
+    try group.await(io);
 
-    const out_dir = try std.fs.openDirAbsolute(args.out_path, .{ .iterate = true });
-    var walk = try out_dir.walk(gpa);
-    while (try walk.next()) |entry| {
+    var out_dir = try std.Io.Dir.openDirAbsolute(io, args.out_path, .{ .iterate = true });
+    defer out_dir.close(io);
+
+    var walk = try out_dir.walk(arena);
+    defer walk.deinit();
+
+    while (try walk.next(io)) |entry| {
         if (std.mem.eql(u8, std.fs.path.extension(entry.basename), ".json")) {
-            try out_dir.deleteFile(entry.path);
+            try out_dir.deleteFile(io, entry.path);
         }
     }
 }
-
-const std = @import("std");
