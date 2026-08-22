@@ -96,40 +96,42 @@ pub fn build(b: *std.Build) !void {
     {
         const python_path = b.option([]const u8, "python-path", "python path used for the gen step") orelse "python";
 
-        const generator = b.addWriteFiles();
-        _ = generator.addCopyDirectory(b.dependency("dear_bindings", .{}).path(""), "", .{});
-        _ = generator.addCopyDirectory(b.dependency("ply", .{}).path(""), "", .{});
-        const generator_path = generator.getDirectory().path(b, "dear_bindings.py");
-
-        const generator_docking = b.addWriteFiles();
-        _ = generator_docking.addCopyDirectory(b.dependency("dear_bindings_docking", .{}).path(""), "", .{});
-        _ = generator_docking.addCopyDirectory(b.dependency("ply", .{}).path(""), "", .{});
-        const generator_docking_path = generator_docking.getDirectory().path(b, "dear_bindings.py");
-
-        const gen_script = b.addExecutable(.{
-            .name = "gen",
-            .root_module = b.createModule(.{
-                .root_source_file = b.path("src/gen.zig"),
-                .target = b.graph.host,
-            }),
-        });
-
-        const run_gen_imgui = b.addRunArtifact(gen_script);
-        run_gen_imgui.addArg(python_path);
-        run_gen_imgui.addFileArg(generator_path);
-        run_gen_imgui.addFileArg(b.path("gen/imgui"));
-        run_gen_imgui.addFileArg(b.dependency("imgui", .{}).path(""));
-
-        const run_gen_imgui_docking = b.addRunArtifact(gen_script);
-        run_gen_imgui_docking.addArg(python_path);
-        run_gen_imgui_docking.addFileArg(generator_docking_path);
-        run_gen_imgui_docking.addFileArg(b.path("gen/imgui_docking"));
-        run_gen_imgui_docking.addFileArg(b.dependency("imgui_docking", .{}).path(""));
+        const run_gen_step = genStep(b, python_path, "dear_bindings", "imgui", "gen/imgui");
+        const run_gen_step_docking = genStep(b, python_path, "dear_bindings_docking", "imgui_docking", "gen/imgui_docking");
 
         const gen_step = b.step("gen", "");
-        gen_step.dependOn(&run_gen_imgui.step);
-        gen_step.dependOn(&run_gen_imgui_docking.step);
+        gen_step.dependOn(run_gen_step);
+        gen_step.dependOn(run_gen_step_docking);
     }
+}
+
+fn genStep(
+    b: *std.Build,
+    python_path: []const u8,
+    dear_binding_dep_name: []const u8,
+    imgui_dep_name: []const u8,
+    output_path: []const u8,
+) *std.Build.Step {
+    const generator = b.addWriteFiles();
+    _ = generator.addCopyDirectory(b.dependency(dear_binding_dep_name, .{}).path(""), "", .{});
+    _ = generator.addCopyDirectory(b.dependency("ply", .{}).path(""), "", .{});
+    const generator_path = generator.getDirectory().path(b, "dear_bindings.py");
+
+    const gen_script = b.addExecutable(.{
+        .name = "gen",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/gen.zig"),
+            .target = b.graph.host,
+        }),
+    });
+
+    const run_gen_imgui = b.addRunArtifact(gen_script);
+    run_gen_imgui.addArg(python_path);
+    run_gen_imgui.addFileArg(generator_path);
+    run_gen_imgui.addFileArg(b.path(output_path));
+    run_gen_imgui.addFileArg(b.dependency(imgui_dep_name, .{}).path(""));
+
+    return &run_gen_imgui.step;
 }
 
 // TODO: use lazy dependencies
